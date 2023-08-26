@@ -1,0 +1,64 @@
+/* PROJECT */
+
+	Site Name:   Provider Web Design
+	Site URL:    https://www.providerweb.design/
+	Created:     2023/05/08
+	Standards:   HTML5, CSS3
+	Components:  jQuery
+	Software:    WordPress
+	Plugins:     ACF, Rank Math, WPForms, et al
+	Web Design:  Troye @ Provider Web Design
+
+/* AUTHOR */
+
+	Name:        Troye Freedom
+	Nickname:    Excelsior
+	Title:       Managing Director, Provider Web Design
+	Location:    Colorado State, USA
+	Blog:        https://www.providerweb.design/blog/
+	Contact:     https://www.providerweb.design/contact/
+
+/* SOCIAL */
+
+	About.me:    https://about.me/jeffstarr
+	WordPress:   https://profiles.wordpress.org/specialk/
+	Linkedin:    https://linkedin.com/in/perishable
+	Twitter:     https://twitter.com/provider_design
+	Books:       https://[gumroad]
+
+/* META */
+
+	Built with: WordPress, PHP8, HTML5, CSS3, jQuery, JavaScript, MariaDB, nginx :)
+
+/* TEAM WOULD LIKE TO THANK */
+
+	Pure CSS
+	Site: https://purecss.io/
+	Author: Yahoo, Inc.
+	From: Sunnyvale, CA, USA
+
+	Mouse-Out Hover Effect: Final
+	Site: https://codepen.io/geoffgraham/pen/yLzvXyL
+	Author: Geoff Graham
+	Twitter: @geoffreygraham
+	Location: Fort Collins, CO, USA
+
+	Hover Effect 5
+	Site: https://codepen.io/team/css-tricks/pen/OJOXWPp
+	Author: CSS-Tricks
+	Twitter: @css
+	Location: Milwaukee, WI, USA
+
+	Pure CSS Sidebar Toggle Menu
+	Site: https://codepen.io/plavookac/pen/qomrMw
+	Author: Jelena Jovanovic
+	Twitter: @plavookac
+	Location: Universe
+
+	Humans TXT: We Are People, Not Machines
+	Email: hello@humanstxt.org
+	Site: http://humanstxt.org
+	Twitter: @humanstxt
+	Location: World Wide Web, Internet
+
+	To anyone else who shares, likes, comments, and contributes!
