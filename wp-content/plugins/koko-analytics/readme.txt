@@ -3,8 +3,8 @@ Contributors: Ibericode, DvanKooten
 Donate link: https://opencollective.com/koko-analytics
 Tags: analytics, statistics, stats, koko
 Requires at least: 5.0
-Tested up to: 6.2
-Stable tag: 1.0.38
+Tested up to: 6.3
+Stable tag: 1.0.39
 License: GPLv3 or later
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 Requires PHP: 5.3
@@ -107,6 +107,13 @@ Please visit the [Koko Analytics project page on OpenCollective](https://opencol
 
 
 == Changelog ==
+
+### 1.0.39 - Aug 29, 2023
+
+- Update referrer blocklist
+- Update third-party JS dependencies
+- Bump tested WordPress version
+
 
 ### 1.0.38 - Apr 25, 2023
 
