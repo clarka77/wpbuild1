@@ -1881,10 +1881,14 @@ abstract class WC_Payment_Gateway_Stripe extends WC_Payment_Gateway {
 	 * @param WC_Order        $order
 	 */
 	public function update_failing_payment_method( $subscription, $order ) {
-		if ( ( $token = $this->get_token( $order->get_meta( WC_Stripe_Constants::PAYMENT_METHOD_TOKEN ), $order->get_customer_id() ) ) ) {
-			$subscription->update_meta_data( WC_Stripe_Constants::PAYMENT_METHOD_TOKEN, $token->get_token() );
-			$subscription->update_meta_data( WC_Stripe_Constants::CUSTOMER_ID, $token->get_customer_id() );
-			$subscription->set_payment_method_title( $token->get_payment_method_title( $this->get_option( 'method_format' ) ) );
+		$payment_method_token = $order->get_meta( WC_Stripe_Constants::PAYMENT_METHOD_TOKEN );
+		if ( $payment_method_token ) {
+			$subscription->update_meta_data( WC_Stripe_Constants::PAYMENT_METHOD_TOKEN, $payment_method_token );
+			$token = $this->get_token( $order->get_meta( WC_Stripe_Constants::PAYMENT_METHOD_TOKEN ), $order->get_customer_id() );
+			if ( $token ) {
+				$subscription->update_meta_data( WC_Stripe_Constants::CUSTOMER_ID, $token->get_customer_id() );
+				$subscription->set_payment_method_title( $token->get_payment_method_title( $this->get_option( 'method_format' ) ) );
+			}
 			$subscription->save();
 		}
 	}

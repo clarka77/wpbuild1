@@ -4,7 +4,7 @@ Tags: stripe, ach, klarna, credit card, apple pay, google pay, ideal, sepa, sofo
 Requires at least: 3.0.1
 Tested up to: 6.3
 Requires PHP: 5.6
-Stable tag: 3.3.47
+Stable tag: 3.3.48
 Copyright: Payment Plugins
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -63,6 +63,10 @@ If your site is not loading over https, then Stripe won't render the Payment Req
 9. Stripe Link for high conversion
 
 == Changelog ==
+= 3.3.48 - 9/3/23 =
+* Fixed - For local payment methods like P24 etc, unset address properties that are empty. Some merchants remove address fields like billing_country so remove those in requests to Stripe to prevent API validation errors.
+* Fixed - If Link is used to pay for a renewal, update the subscriptions payment method ID.
+* Updated - If a subscription is set to manual because it was created using another plugin, update the payment method when the renewal order is paid for.
 = 3.3.47 - 8/31/23 =
 * Added - Support for Level3 data which can decrease processing fees. This is a beta feature offered by Stripe and only US merchants are eligible at this time.
 * Added - Link support for the Stripe inline form

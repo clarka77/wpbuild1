@@ -336,7 +336,8 @@ trait WC_Stripe_Local_Payment_Intent_Trait {
 			)
 		);
 
-		$billing_details = array_filter( $billing_details );
+		$billing_details            = array_filter( $billing_details );
+		$billing_details['address'] = array_filter( $billing_details['address'] );
 
 		return array(
 			'type'               => $type,
