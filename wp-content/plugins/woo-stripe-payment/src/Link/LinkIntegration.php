@@ -168,15 +168,15 @@ class LinkIntegration {
 	 */
 	public function add_confirmation_args( $args, $intent, $order ) {
 		if ( isset( $intent->payment_method->type ) ) {
-			$ip_address = $order->get_customer_ip_address();
-			$user_agent = $order->get_customer_user_agent();
-			if ( ! $ip_address ) {
-				$ip_address = \WC_Geolocation::get_external_ip_address();
-			}
-			if ( ! $user_agent ) {
-				$user_agent = 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' );
-			}
 			if ( $intent->payment_method->type === 'link' ) {
+				$ip_address = $order->get_customer_ip_address();
+				$user_agent = $order->get_customer_user_agent();
+				if ( ! $ip_address ) {
+					$ip_address = \WC_Geolocation::get_external_ip_address();
+				}
+				if ( ! $user_agent ) {
+					$user_agent = 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' );
+				}
 				$args['mandate_data'] = [
 					'customer_acceptance' => [
 						'type'   => 'online',
@@ -186,6 +186,14 @@ class LinkIntegration {
 						]
 					]
 				];
+
+				/**
+				 * Stripe does not support the ability to capture authorized payments when level3 data is passed,
+				 * so we need to unset level3 if it has been previously added during payment intent creation.
+				 */
+				if ( ! empty( $intent->level3 ) && $intent->capture_method === \WC_Stripe_Constants::MANUAL ) {
+					$args['level3'] = null;
+				}
 			}
 		}
 

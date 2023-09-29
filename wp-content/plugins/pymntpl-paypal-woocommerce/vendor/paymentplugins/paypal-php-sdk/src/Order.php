@@ -5,20 +5,22 @@ namespace PaymentPlugins\PayPalSDK;
 
 /**
  * @property \PaymentPlugins\PayPalSDK\OrderApplicationContext $application_context
- * @property string $id
- * @property string $intent
- * @property PaymentSource $payment_source
- * @property Payer $payer
- * @property Collection $purchase_units
- * @property string $status
- * @property Collection $links
- * @property string $create_time
- * @property string $update_time
+ * @property string                                            $id
+ * @property string                                            $intent
+ * @property PaymentSource                                     $payment_source
+ * @property Payer                                             $payer
+ * @property Collection                                        $purchase_units
+ * @property string                                            $status
+ * @property Collection                                        $links
+ * @property string                                            $create_time
+ * @property string                                            $update_time
  *
  * Class Order
  * @package PaymentPlugins\PayPalSDK
  */
 class Order extends AbstractObject {
+
+	const CREATED = 'CREATED';
 
 	const CAPTURE = 'CAPTURE';
 
@@ -194,11 +196,17 @@ class Order extends AbstractObject {
 		return $this->status === self::COMPLETED;
 	}
 
+	public function isCreated() {
+		return $this->status === self::CREATED;
+	}
+
 	/**
 	 * return true if the order requires the payer to take an action.
+	 *
 	 * @return bool
 	 */
 	public function isActionRequired() {
 		return $this->status === self::PAYER_ACTION_REQUIRED;
 	}
+
 }

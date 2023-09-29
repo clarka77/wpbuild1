@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit4074c53d639c85cc8b59cefbb25f6c94
+class ComposerStaticInita70683215f086968b5ed9cf5a0c61b8a
 {
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
@@ -13,6 +13,7 @@ class ComposerStaticInit4074c53d639c85cc8b59cefbb25f6c94
         'KokoAnalytics\\Command' => __DIR__ . '/../..' . '/src/class-command.php',
         'KokoAnalytics\\Endpoint_Installer' => __DIR__ . '/../..' . '/src/class-endpoint-installer.php',
         'KokoAnalytics\\Migrations' => __DIR__ . '/../..' . '/src/class-migrations.php',
+        'KokoAnalytics\\Pageview_Aggregator' => __DIR__ . '/../..' . '/src/class-pageview-aggregator.php',
         'KokoAnalytics\\Plugin' => __DIR__ . '/../..' . '/src/class-plugin.php',
         'KokoAnalytics\\Pruner' => __DIR__ . '/../..' . '/src/class-pruner.php',
         'KokoAnalytics\\Rest' => __DIR__ . '/../..' . '/src/class-rest.php',
@@ -24,7 +25,7 @@ class ComposerStaticInit4074c53d639c85cc8b59cefbb25f6c94
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->classMap = ComposerStaticInit4074c53d639c85cc8b59cefbb25f6c94::$classMap;
+            $loader->classMap = ComposerStaticInita70683215f086968b5ed9cf5a0c61b8a::$classMap;
 
         }, null, ClassLoader::class);
     }

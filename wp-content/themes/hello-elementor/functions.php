@@ -226,3 +226,61 @@ if ( ! function_exists( 'hello_elementor_body_open' ) ) {
 		wp_body_open();
 	}
 }
+
+/**
+ * Change Default Gravatar
+ */
+add_filter( 'avatar_defaults', 'wpb_new_gravatar' );
+function wpb_new_gravatar ($avatar_defaults) {
+    $myavatar = 'https://stage6.develop-ment.space/wp-content/uploads/2023/07/default.png';
+    $avatar_defaults[$myavatar] = "Default Gravatar";
+    return $avatar_defaults;
+}
+
+/**
+ * Humans.txt will display in the root of your site
+ */
+add_action( 'init', 'add_humans_txt_rewrite', 10 );
+function add_humans_txt_rewrite() {
+    add_rewrite_rule( '^humans\.txt$', 'index.php?humans_txt=true', 'top' );
+}
+
+/**
+ * Filter the list of public query vars in order to allow the WP::parse_request
+ * to register the query variable.
+ *
+ * @param array $public_query_vars The array of whitelisted query variables.
+ *
+ * @return array
+ */
+add_filter( 'query_vars', 'add_humans_txt_query_var', 10, 1 );
+function add_humans_txt_query_var( $public_query_vars ) {
+    $public_query_vars[] = 'humans_txt';
+    return $public_query_vars;
+}
+
+/**
+ * Hook the parse_request action and serve the humans.txt when custom query variable is set to 'true'.
+ *
+ * @param WP $wp Current WordPress environment instance
+ */
+add_action( 'parse_request', 'get_humans_txt_request', 10, 1 );
+function get_humans_txt_request( $wp ) {
+    if ( isset( $wp->query_vars['humans_txt'] ) && 'true' === $wp->query_vars['humans_txt'] ) {
+        header( 'Content-Type: text/plain' );
+        echo file_get_contents( get_stylesheet_directory() . '/humans.txt' );
+        exit;
+    }
+}
+
+//Add a LINK tag in the HEAD of your main page
+add_action('wp_head', 'add_humans_txt_link');
+function add_humans_txt_link() {
+    if (is_front_page()) {
+        echo '<!-- humans.txt we are people, not machines -->';
+        echo '<link type="text/plain" rel="author" href="humans.txt" />';
+    }
+};
+/**
+ * End of Humans.txt
+ */

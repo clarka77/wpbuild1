@@ -19,6 +19,8 @@ class LocaleUtil {
 				// en = en_EN
 				$locale = "{$locale}_" . strtoupper( $locale );
 			}
+		} elseif ( strlen( $locale ) > 5 ) {
+			$locale = substr( $locale, 0, 5 );
 		}
 
 		return apply_filters( 'wc_ppcp_get_site_locale', $locale );

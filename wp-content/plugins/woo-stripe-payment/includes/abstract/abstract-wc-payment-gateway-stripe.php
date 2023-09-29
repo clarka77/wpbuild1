@@ -598,13 +598,13 @@ abstract class WC_Payment_Gateway_Stripe extends WC_Payment_Gateway {
 	 * @param WC_Order $order
 	 */
 	public function capture_charge( $amount, $order ) {
-		$result = $this->gateway->charges->mode( wc_stripe_order_mode( $order ) )->retrieve( $order->get_transaction_id() );
+		$result = $this->gateway->mode( wc_stripe_order_mode( $order ) )->charges->retrieve( $order->get_transaction_id() );
 
 		if ( is_wp_error( $result ) ) {
 			return;
 		} else {
 			if ( ! $result->captured ) {
-				$result = $this->payment_object->capture_charge( $amount, $order );
+				$result = $this->payment_object->capture_charge( $amount, $order, $result );
 
 				if ( ! is_wp_error( $result ) ) {
 					remove_action( 'woocommerce_order_status_completed', 'wc_stripe_order_status_completed' );

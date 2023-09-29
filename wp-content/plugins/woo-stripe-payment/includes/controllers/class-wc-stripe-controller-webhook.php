@@ -50,7 +50,7 @@ class WC_Stripe_Controller_Webhook extends WC_Stripe_Rest_Controller {
 				throw new Exception( 'Invalid request payload.' );
 			}
 			$mode         = $json_payload['livemode'] == true ? 'live' : 'test';
-			$webhook_id   = "webhook_id_${mode}";
+			$webhook_id   = "webhook_id_{$mode}";
 			$this->secret = stripe_wc()->api_settings->get_option( 'webhook_secret_' . $mode );
 			// if the webhook ID exists and doesn't match the ID from the notification, then don't process. This will
 			// happen if the Stripe account has multiple webhooks configured.

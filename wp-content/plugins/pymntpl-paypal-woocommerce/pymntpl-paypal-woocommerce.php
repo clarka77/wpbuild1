@@ -3,7 +3,7 @@
  * Plugin Name: Payment Plugins for PayPal WooCommerce
  * Plugin URI: https://docs.paymentplugins.com/wc-paypal/config/
  * Description: Accept PayPal on your WooCommerce site.
- * Version: 1.0.37
+ * Version: 1.0.38
  * Author: Payment Plugins, support@paymentplugins.com
  * Text Domain: pymntpl-paypal-woocommerce
  * Domain Path: /i18n/languages/
@@ -17,5 +17,5 @@
 require_once dirname( __FILE__ ) . '/vendor/autoload.php';
 
 \PaymentPlugins\WooCommerce\PPCP\PluginValidation::is_valid( function () {
-	new \PaymentPlugins\WooCommerce\PPCP\Main( '1.0.37', __FILE__ );
+	new \PaymentPlugins\WooCommerce\PPCP\Main( '1.0.38', __FILE__ );
 } );

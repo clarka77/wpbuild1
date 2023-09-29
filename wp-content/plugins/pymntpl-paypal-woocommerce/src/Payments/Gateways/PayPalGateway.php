@@ -3,8 +3,6 @@
 
 namespace PaymentPlugins\WooCommerce\PPCP\Payments\Gateways;
 
-use PaymentPlugins\WooCommerce\PPCP\Admin\Settings\PayLaterMessageSettings;
-use PaymentPlugins\WooCommerce\PPCP\Main;
 use PaymentPlugins\WooCommerce\PPCP\PayPalQueryParams;
 use PaymentPlugins\WooCommerce\PPCP\ProductSettings;
 use PaymentPlugins\WooCommerce\PPCP\Tokens\PayPalToken;
@@ -27,10 +25,11 @@ class PayPalGateway extends AbstractGateway {
 
 	public function __construct( ...$args ) {
 		parent::__construct( ...$args );
-		$this->method_title       = __( 'PayPal Gateway', 'pymntpl-paypal-woocommerce' );
+		$this->method_title       = __( 'PayPal Gateway By Payment Plugins', 'pymntpl-paypal-woocommerce' );
 		$this->tab_label          = __( 'PayPal Settings', 'pymntpl-paypal-woocommerce' );
 		$this->icon               = $this->assets->assets_url( 'assets/img/paypal_logo.svg' );
 		$this->method_description = __( 'Offer PayPal, PayLater, Venmo, and Credit Cards', 'pymntpl-paypal-woocommerce' );
+		$this->order_button_text  = $this->get_option( 'order_button_text' );
 	}
 
 	protected function init_hooks() {
@@ -129,15 +128,18 @@ class PayPalGateway extends AbstractGateway {
 				'description' => __( 'This option controls how the PayPal payment method appears on the frontend.', 'pymntpl-paypal-woocommerce' )
 			],
 			'checkout_placement'            => [
-				'title'       => __( 'Checkout page Button Placement', 'pymntpl-paypal-woocommerce' ),
-				'type'        => 'select',
-				'options'     => [
+				'title'             => __( 'Checkout page Button Placement', 'pymntpl-paypal-woocommerce' ),
+				'type'              => 'select',
+				'options'           => [
 					'place_order'    => __( 'Place Order Button', 'pymntpl-paypal-woocommerce' ),
 					'payment_method' => __( 'In payment gateway section', 'pymntpl-paypal-woocommerce' )
 				],
-				'default'     => 'place_order',
-				'desc_tip'    => true,
-				'description' => __( 'You can choose to render the PayPal button in either the payment method section of the checkout page or where the Place Order button is rendered.', 'pymntpl-paypal-woocommerce' )
+				'default'           => 'place_order',
+				'desc_tip'          => true,
+				'description'       => __( 'You can choose to render the PayPal button in either the payment method section of the checkout page or where the Place Order button is rendered.', 'pymntpl-paypal-woocommerce' ),
+				'custom_attributes' => [
+					'data-show-if' => 'use_place_order=false'
+				]
 			],
 			'show_popup_icon'               => [
 				'title'             => __( 'Show Popup Icon and Text', 'pymntpl-paypal-woocommerce' ),
@@ -149,6 +151,27 @@ class PayPalGateway extends AbstractGateway {
 				'custom_attributes' => [
 					'data-show-if' => 'checkout_placement=place_order'
 				],
+			],
+			'use_place_order'               => [
+				'title'       => __( 'Use Place Order Button', 'pymntpl-paypal-woocommerce' ),
+				'type'        => 'checkbox',
+				'default'     => 'no',
+				'value'       => 'yes',
+				'desc_tip'    => true,
+				'description' => __( 'If enabled, the plugin will use the Place Order button on the checkout page rather than rendering the PayPal buttons. This option does not affect express checkout.',
+					'pymntpl-paypal-woocommerce' )
+			],
+			'order_button_text'             => [
+				'title'             => __( 'Button Text', 'pymntpl-paypal-woocommerce' ),
+				'type'              => 'text',
+				'default'           => esc_html__( 'Pay with PayPal', 'pymntpl-paypal-woocommerce' ),
+				'desc_tip'          => true,
+				'description'       => __( 'The text for the Place Order button when PayPal is selected. Leave blank to use the default WooCommerce text.',
+					'pymntpl-paypal-woocommerce' ),
+				'custom_attributes' => [
+					'data-show-if' => 'use_place_order=true'
+				],
+
 			],
 			'button_options'                => [
 				'type'  => 'title',
@@ -355,9 +378,13 @@ class PayPalGateway extends AbstractGateway {
 	}
 
 	public function get_checkout_script_handles() {
-		$this->assets->register_script( 'wc-ppcp-checkout-gateway', 'build/js/paypal-checkout.js' );
+		if ( ! $this->is_place_order_button() ) {
+			$this->assets->register_script( 'wc-ppcp-checkout-gateway', 'build/js/paypal-checkout.js' );
 
-		return [ 'wc-ppcp-checkout-gateway' ];
+			return [ 'wc-ppcp-checkout-gateway' ];
+		}
+
+		return [];
 	}
 
 	public function get_express_checkout_script_handles() {
@@ -442,7 +469,8 @@ class PayPalGateway extends AbstractGateway {
 			'paypal_sections'      => array_merge( $this->get_option( 'sections', [] ), [ 'checkout' ] ),
 			'paylater_sections'    => $this->get_option( 'paylater_sections', [] ),
 			'credit_card_sections' => $this->get_option( 'credit_card_sections', [] ),
-			'venmo_sections'       => $this->get_option( 'venmo_sections', [] )
+			'venmo_sections'       => $this->get_option( 'venmo_sections', [] ),
+			'placeOrderEnabled'    => $this->is_place_order_button()
 		];
 		if ( $context->is_product() ) {
 			$settings                        = new ProductSettings( Utils::get_queried_product_id() );
@@ -567,8 +595,26 @@ class PayPalGateway extends AbstractGateway {
 	 * @return bool
 	 */
 	public function is_show_popup_icon_enabled() {
-		return $this->get_option( 'checkout_placement', 'place_order' ) === 'place_order'
+		return ( $this->get_option( 'checkout_placement', 'place_order' ) === 'place_order'
+		         || $this->is_place_order_button() )
 		       && wc_string_to_bool( $this->get_option( 'show_popup_icon', 'yes' ) );
+	}
+
+	/**
+	 * @since 1.0.38
+	 * @return bool
+	 */
+	public function is_place_order_button() {
+		return \wc_string_to_bool( $this->get_option( 'use_place_order', 'no' ) );
+	}
+
+	public function get_order_button_text() {
+		$text = $this->order_button_text;
+		if ( ! $text ) {
+			$text = apply_filters( 'woocommerce_order_button_text', __( 'Place order', 'pymntpl-paypal-woocommerce' ) );
+		}
+
+		return $text;
 	}
 
 }

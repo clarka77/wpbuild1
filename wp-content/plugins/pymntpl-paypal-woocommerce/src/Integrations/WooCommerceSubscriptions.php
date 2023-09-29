@@ -4,15 +4,12 @@
 namespace PaymentPlugins\WooCommerce\PPCP\Integrations;
 
 use PaymentPlugins\PayPalSDK\Order;
-use PaymentPlugins\PayPalSDK\Payment;
-use PaymentPlugins\PayPalSDK\PayPalClient;
 use PaymentPlugins\WooCommerce\PPCP\Constants;
 use PaymentPlugins\WooCommerce\PPCP\Factories\CoreFactories;
 use PaymentPlugins\WooCommerce\PPCP\Main;
 use PaymentPlugins\WooCommerce\PPCP\PaymentHandler;
 use PaymentPlugins\WooCommerce\PPCP\PaymentResult;
 use PaymentPlugins\WooCommerce\PPCP\Payments\Gateways\AbstractGateway;
-use PaymentPlugins\WooCommerce\PPCP\Rest\Routes\AbstractRoute;
 use PaymentPlugins\WooCommerce\PPCP\Rest\Routes\CartCheckout;
 use PaymentPlugins\WooCommerce\PPCP\Tokens\AbstractToken;
 use PaymentPlugins\WooCommerce\PPCP\Utilities\PayPalFee;
@@ -62,30 +59,44 @@ class WooCommerceSubscriptions implements PluginIntegrationType {
 		} elseif ( wcs_order_contains_subscription( $order ) || wcs_order_contains_renewal( $order ) ) {
 			// Order contains a subscription. Create the billing agreement
 			$billing_token = $payment_method->get_billing_token_from_request();
-			if ( $billing_token ) {
-				$billing_agreement = $this->client->billingAgreements->create( [ 'token_id' => $billing_token ] );
-				if ( is_wp_error( $billing_agreement ) ) {
-					return $billing_agreement;
+			if ( ! $billing_token ) {
+				// There is no billing token so create one and redirect to approval page.
+				$this->factories->initialize( $order );
+				$this->factories->billingAgreement->set_needs_shipping( false );
+				$params = $this->factories->billingAgreement->from_order();
+				$token  = $this->client->orderMode( $order )->billingAgreementTokens->create( $params );
+				if ( is_wp_error( $token ) ) {
+					return $token;
 				}
-				$token = $payment_method->get_payment_method_token_instance();
-				$token->initialize_from_payer( $billing_agreement->payer->payer_info );
-				$order->set_payment_method_title( $token->get_payment_method_title() );
-				$order->update_meta_data( Constants::BILLING_AGREEMENT_ID, $billing_agreement->id );
-				$order->update_meta_data( Constants::PPCP_ENVIRONMENT, $this->client->getEnvironment() );
-				$order->update_meta_data( Constants::PAYER_ID, $token->get_payer_id() );
-				$order->save();
-				$this->save_order_meta( $order, $token );
-				$payment_method->payment_handler->set_use_billing_agreement( true );
-				if ( 0 == $order->get_total() ) {
-					if ( $payment_method->get_option( 'intent' ) === 'capture' ) {
-						$order->payment_complete();
-					} else {
-						$order->update_status( apply_filters( 'wc_ppcp_authorized_order_status', $payment_method->get_option( 'authorize_status', 'on-hold' ) ) );
-					}
-					$result = true;
+
+				return [
+					'result'   => 'success',
+					'redirect' => $token->getApprovalUrl()
+				];
+			}
+
+			$billing_agreement = $this->client->billingAgreements->create( [ 'token_id' => $billing_token ] );
+			if ( is_wp_error( $billing_agreement ) ) {
+				return $billing_agreement;
+			}
+			$token = $payment_method->get_payment_method_token_instance();
+			$token->initialize_from_payer( $billing_agreement->payer->payer_info );
+			$order->set_payment_method_title( $token->get_payment_method_title() );
+			$order->update_meta_data( Constants::BILLING_AGREEMENT_ID, $billing_agreement->id );
+			$order->update_meta_data( Constants::PPCP_ENVIRONMENT, $this->client->getEnvironment() );
+			$order->update_meta_data( Constants::PAYER_ID, $token->get_payer_id() );
+			$order->save();
+			$this->save_order_meta( $order, $token );
+			$payment_method->payment_handler->set_use_billing_agreement( true );
+			if ( 0 == $order->get_total() ) {
+				if ( $payment_method->get_option( 'intent' ) === 'capture' ) {
+					$order->payment_complete();
 				} else {
-					$result = false;
+					$order->update_status( apply_filters( 'wc_ppcp_authorized_order_status', $payment_method->get_option( 'authorize_status', 'on-hold' ) ) );
 				}
+				$result = true;
+			} else {
+				$result = false;
 			}
 		}
 
@@ -118,6 +129,26 @@ class WooCommerceSubscriptions implements PluginIntegrationType {
 				$order->update_meta_data( Constants::BILLING_AGREEMENT_ID, $billing_agreement->id );
 				$order->update_meta_data( Constants::PAYER_ID, $token->get_payer_id() );
 				$order->save();
+			} else {
+				// There is no billing token so create one and redirect to approval page.
+				$this->factories->initialize( $order );
+				$this->factories->billingAgreement->set_needs_shipping( false );
+				$params                                               = $this->factories->billingAgreement->from_order();
+				$params['plan']['merchant_preferences']['return_url'] = add_query_arg( [
+					'change_payment_method' => $order->get_id()
+				], $params['plan']['merchant_preferences']['return_url'] );
+
+				$params['plan']['merchant_preferences']['cancel_url'] = add_query_arg( [ 'change_payment_method' => $order->get_id(), '_wpnonce' => wp_create_nonce() ], $order->get_checkout_payment_url() );
+
+				$token = $this->client->orderMode( $order )->billingAgreementTokens->create( $params );
+				if ( is_wp_error( $token ) ) {
+					throw new \Exception( ( $token->get_error_message() ) );
+				}
+
+				return [
+					'result'   => 'success',
+					'redirect' => $token->getApprovalUrl()
+				];
 			}
 		} catch ( \Exception $e ) {
 			return new \WP_Error( sprintf( __( 'Error saving payment method for subscription. Reason: %s', 'pymntpl-paypal-woocommerce' ), $e->getMessage() ) );
@@ -127,7 +158,8 @@ class WooCommerceSubscriptions implements PluginIntegrationType {
 	}
 
 	private function is_change_payment_method_request() {
-		return did_action( 'woocommerce_subscriptions_pre_update_payment_method' );
+		return did_action( 'woocommerce_subscriptions_pre_update_payment_method' )
+		       || \WC_Subscriptions_Change_Payment_Gateway::$is_request_to_change_payment;
 	}
 
 	/**

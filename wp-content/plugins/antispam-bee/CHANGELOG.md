@@ -1,5 +1,31 @@
 ## Changelog ##
 
+### 2.11.5 ###
+IMPORTANT: If you use the country check and are behind a proxy or similar, you need to use the `antispam_bee_trusted_ip` filter to get the correct IP from a header like `HTTP_X_FORWARDED`  (don’t return an empty value here, otherwise all comments are marked as spam).
+WICHTIG: Wenn du den Spam-Check für bestimmte Länder verwendest und hinter einem Proxy oder ähnlich bist, musst du den `antispam_bee_trusted_ip`-Filter verwenden, um die richtige Adresse des Users von einem Header wie `HTTP_X_FORWARDED` zu bekommen (hier darfst du keinen leeren String zurückgeben, sonst werden alle Kommentare als Spam markiert).
+* **English**
+  * Fix: Usage of core filter `pre_comment_user_ip` breaks ASB if the IP address is removed for GDPR compliance
+
+* **Deutsch**
+  * Fix: Die Verwendung des Core-Filters `pre_comment_user_ip` sorgt für Fehler, wenn die IP-Adresse für die Einhaltung der DSGVO entfernt wird
+
+### 2.11.4 ###
+IMPORTANT: If you use the country check and are behind a proxy or similar, you need to use the `pre_comment_user_ip` filter to get the correct IP from a header like `HTTP_X_FORWARDED`.  
+WICHTIG: Wenn du den Spam-Check für bestimmte Länder verwendest und hinter einem Proxy oder ähnlich bist, musst du den `pre_comment_user_ip`-Filter verwenden, um die richtige Adresse des Users von einem Header wie `HTTP_X_FORWARDED` zu bekommen.
+* **English**
+  * Fix: Read client IP for country check from `REMOTE_ADDR` only (filterable via `pre_comment_user_ip`)
+  * Fix: No spam reason in spam notification email, and related PHP warning
+  * Fix: Remove outdated info from readme
+  * Enhancement: Show upgrade notice on plugin overview page
+  * Maintenance: Tested up to WordPress 6.3
+
+* **Deutsch**
+  * Fix: Client-IP wird nur noch aus `REMOTE_ADDR` ermittelt (filterbar über `pre_comment_user_ip`)
+  * Fix: Der Spam-Grund wird wieder korrekt in der Benachrichtigungs-E-Mail zu Spam angezeigt und die damit zusammenhängende PHP-Warning behoben
+  * Fix: Veraltete Infos aus der Readme wurden entfernt
+  * Verbesserung: Upgrade-Hinweis wird auch in der Plugin-Übersicht angezeigt
+  * Wartung: Getestet mit WordPress 6.3
+
 ### 2.11.3 ###
 * **English**
   * Fix: Multiselect for "Delete comments by spam reasons" was not saving values

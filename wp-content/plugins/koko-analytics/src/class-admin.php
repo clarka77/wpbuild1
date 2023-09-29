@@ -12,7 +12,6 @@ class Admin
 	{
 		global $pagenow;
 
-		add_action( 'init', array( $this, 'maybe_run_migrations' ) );
 		add_action( 'admin_menu', array( $this, 'register_menu' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'wp_dashboard_setup', array( $this, 'register_dashboard_widget' ) );
@@ -59,6 +58,7 @@ class Admin
 						'root' => rest_url(),
 						'nonce' => wp_create_nonce( 'wp_rest' ),
 						'colors' => $this->get_colors(),
+						'date_format' => get_option( 'date_format' ),
 					)
 				);
 				break;
@@ -84,6 +84,7 @@ class Admin
 					'dbSize' => $this->get_database_size(),
 					'colors' => $colors,
 					'multisite' => is_multisite(),
+					'date_format' => get_option( 'date_format' ),
 					'custom_endpoint' => array(
 						'enabled' => using_custom_endpoint(),
 						'file_contents' => $endpoint_installer->get_file_contents(),
@@ -105,6 +106,12 @@ class Admin
 
 	private function is_cron_event_working()
 	{
+		// Always return true on localhost / dev-ish environments
+		$site_url = get_site_url();
+		if (strpos($site_url, ':') !== false || strpos($site_url, 'localhost') !== false || strpos($site_url, '.local') !== false) {
+			return true;
+		}
+
 		// detect issues with WP Cron event not running
 		// it should run every minute, so if it didn't run in 10 minutes there is most likely something wrong
 		$next_scheduled = wp_next_scheduled( 'koko_analytics_aggregate_stats' );
@@ -145,30 +152,15 @@ class Admin
 			return;
 		}
 
+		// do not run if we attempted in the last hour already
+		if ( get_transient( 'koko_analytics_install_custom_endpoint_attempt' ) !== false ) {
+			return;
+		}
+
 		install_and_test_custom_endpoint();
-	}
 
-	public function maybe_run_migrations()
-	{
-		if ( ! current_user_can( 'manage_options' ) ) {
-			return;
-		}
-
-		$from_version = isset( $_GET['koko_analytics_migrate_from_version'] ) ? $_GET['koko_analytics_migrate_from_version'] : get_option( 'koko_analytics_version', '0.0.1' );
-		$to_version = KOKO_ANALYTICS_VERSION;
-		if ( version_compare( $from_version, $to_version, '>=' ) ) {
-			return;
-		}
-
-		// run upgrade migrations (if any)
-		$migrations_dir = KOKO_ANALYTICS_PLUGIN_DIR . '/migrations/';
-		$migrations = new Migrations( $from_version, $to_version, $migrations_dir );
-		$migrations->run();
-		update_option( 'koko_analytics_version', $to_version );
-
-		// make sure scheduled event is set-up correctly
-		$aggregator = new Aggregator();
-		$aggregator->setup_scheduled_event();
+		// set flag to prevent attempting to install again within the next hour
+		set_transient( 'koko_analytics_install_custom_endpoint_attempt', 1, HOUR_IN_SECONDS );
 	}
 
 	private function get_colors()

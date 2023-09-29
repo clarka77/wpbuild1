@@ -6,17 +6,18 @@ use PaymentPlugins\WooCommerce\PPCP\Admin\Settings\AdvancedSettings;
 use PaymentPlugins\WooCommerce\PPCP\Main;
 
 /**
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\OrderFactory              $order
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\BreakdownFactory          $breakdown
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\PayerFactory              $payer
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\AddressFactroy            $address
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\ShippingFactory           $shipping
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\ShippingOptionsFactory    $shippingOptions
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\ItemsFactory              $items
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\ApplicationContextFactory $applicationContext
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\PurchaseUnitFactory       $purchaseUnit
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\NameFactory               $name
- * @property \PaymentPlugins\WooCommerce\PPCP\Factories\PaymentSourceFactory      $paymentSource
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\OrderFactory                 $order
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\BreakdownFactory             $breakdown
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\PayerFactory                 $payer
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\AddressFactroy               $address
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\ShippingFactory              $shipping
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\ShippingOptionsFactory       $shippingOptions
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\ItemsFactory                 $items
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\ApplicationContextFactory    $applicationContext
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\PurchaseUnitFactory          $purchaseUnit
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\NameFactory                  $name
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\PaymentSourceFactory         $paymentSource
+ * @property \PaymentPlugins\WooCommerce\PPCP\Factories\BillingAgreementTokenFactory $billingAgreement
  */
 class CoreFactories {
 
@@ -45,7 +46,8 @@ class CoreFactories {
 			'applicationContext' => new ApplicationContextFactory( $container->get( AdvancedSettings::class ), $this ),
 			'purchaseUnit'       => new PurchaseUnitFactory( $container->get( AdvancedSettings::class ), $this ),
 			'name'               => new NameFactory( $this ),
-			'paymentSource'      => new PaymentSourceFactory( $this )
+			'paymentSource'      => new PaymentSourceFactory( $this ),
+			'billingAgreement'   => new BillingAgreementTokenFactory( $this )
 		];
 	}
 

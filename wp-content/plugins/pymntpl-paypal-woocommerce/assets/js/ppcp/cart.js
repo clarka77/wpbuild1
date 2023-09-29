@@ -114,6 +114,10 @@ class Cart extends Event {
     sanitizeResponse(response) {
         if (typeof response === 'string') {
             response = response.replace(/<[^>]*>/g, '');
+        } else if (Array.isArray(response)) {
+            // some 3rd party plugins manipulate the WordPress REST API response
+            // and make it an array
+            response = this.sanitizeResponse(response[0]);
         }
         return response;
     }

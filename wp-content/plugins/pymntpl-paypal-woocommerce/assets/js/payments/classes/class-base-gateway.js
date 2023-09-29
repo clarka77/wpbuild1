@@ -386,13 +386,14 @@ class BaseGateway {
         return actions.order.create(args);
     }
 
-    createBillingAgreement(data, actions) {
+    createBillingAgreement(data, actions, extraData = null) {
         return apiFetch({
             method: 'POST',
             url: getRestPath('/wc-ppcp/v1/billing-agreement/token'),
             data: {
                 payment_method: this.id,
-                context: this.getPage()
+                context: this.getPage(),
+                ...extraData
             }
         }).then(token => {
             return token;

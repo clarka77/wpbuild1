@@ -68,7 +68,9 @@ class RestController {
 				$this->container->get( Logger::class ) ),
 			'billing-agreement/token' => new BillingAgreementToken(
 				$this->container->get( PayPalClient::class ),
-				$this->container->get( Logger::class )
+				$this->container->get( Logger::class ),
+				$this->container->get( AdvancedSettings::class ),
+				$this->container->get( CoreFactories::class )
 			),
 			'billing-agreement'       => new BillingAgreementRoute( $this->container->get( PayPalClient::class ) ),
 			'webhook'                 => new WebhookRoute(

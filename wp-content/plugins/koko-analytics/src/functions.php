@@ -19,12 +19,25 @@ function maybe_collect_request() {
 }
 
 function collect_request() {
-	$unique_visitor  = (int) $_GET['nv'];
-	$unique_pageview = (int) $_GET['up'];
-	$post_id         = (int) $_GET['p'];
-	$referrer        = isset( $_GET['r'] ) ? trim( $_GET['r'] ) : '';
+	if ( ! isset( $_GET['e'] ) ) {
+		$data = array(
+			'p',                // type indicator
+			(int) $_GET['p'],   // post ID
+			(int) $_GET['nv'],  // new visitor?
+			(int) $_GET['up'],  // unique pageview?
+			$_GET['r'] ?? '',   // referrer URL
+		);
+	} else {
+		$data = array(
+			'e',            // type indicator
+			$_GET['e'],     // event name
+			$_GET['p1'],    // event param 1
+			$_GET['p2'],    // event param 2
+			$_GET['v'],    // event value
+		);
+	}
 
-	$success = isset( $_GET['test'] ) ? test_collect_in_file() : collect_in_file( $post_id, $unique_visitor, $unique_pageview, $referrer );
+	$success = isset( $_GET['test'] ) ? test_collect_in_file() : collect_in_file( $data );
 
 	// set OK headers & prevent caching
 	if ( ! $success ) {
@@ -42,10 +55,10 @@ function collect_request() {
 	header( 'Tk: N' );
 
 	// set cookie server-side if requested (eg for AMP requests)
-	if ( isset( $_GET['sc'] ) && (int) $_GET['sc'] === 1 ) {
-		$posts_viewed = isset( $_COOKIE['_koko_analytics_pages_viewed'] ) ? explode( ',', $_COOKIE['_koko_analytics_pages_viewed'] ) : array();
-		if ( $unique_pageview ) {
-			$posts_viewed[] = $post_id;
+	if ( isset( $_GET['p'] ) && isset( $_GET['sc'] ) && (int) $_GET['sc'] === 1 ) {
+		$posts_viewed = isset( $_COOKIE['_koko_analytics_pages_viewed'] ) ? explode( ',', $_COOKIE['_koko_analytics_pages_viewed'] ) : array( '' );
+		if ( (int) $_GET['nv'] ) {
+			$posts_viewed[] = (int) $_GET['p'];
 		}
 		$cookie = join( ',', $posts_viewed );
 		setcookie( '_koko_analytics_pages_viewed', $cookie, time() + 6 * HOUR_IN_SECONDS, '/' );
@@ -65,7 +78,7 @@ function get_buffer_filename() {
 	return rtrim( $uploads['basedir'], '/' ) . '/pageviews.php';
 }
 
-function collect_in_file( $post_id, $is_new_visitor, $is_unique_pageview, $referrer = '' ) {
+function collect_in_file( array $data ) {
 	$filename = get_buffer_filename();
 
 	// if file does not yet exist, add PHP header to prevent direct file access
@@ -76,8 +89,8 @@ function collect_in_file( $post_id, $is_new_visitor, $is_unique_pageview, $refer
 	}
 
 	// append data to file
-	$line = join( ',', array( $post_id, $is_new_visitor, $is_unique_pageview, $referrer ) );
-	$content .= $line . PHP_EOL;
+	$line = join( ',', $data ) . PHP_EOL;
+	$content .= $line;
 	return file_put_contents( $filename, $content, FILE_APPEND );
 }
 
@@ -111,10 +124,16 @@ function get_most_viewed_posts( array $args ) {
 		'show_date' => false,
 		'days'    => 30,
 	);
+
 	$args = array_merge( $default_args, $args );
+	$args['post_type'] = is_array( $args['post_type'] ) ? $args['post_type'] : explode( ',', $args['post_type'] );
+	$args['post_type'] = array_map( 'trim', $args['post_type'] );
 	$start_date = gmdate( 'Y-m-d', strtotime( "-{$args['days']} days" ) );
 	$end_date   = gmdate( 'Y-m-d', strtotime( 'tomorrow midnight' ) );
-	$sql        = $wpdb->prepare( "SELECT p.id, SUM(visitors) As visitors, SUM(pageviews) AS pageviews FROM {$wpdb->prefix}koko_analytics_post_stats s JOIN {$wpdb->posts} p ON s.id = p.id WHERE p.id > 0 AND s.date >= %s AND s.date <= %s AND p.post_type = %s AND p.post_status = 'publish' GROUP BY s.id ORDER BY pageviews DESC LIMIT 0, %d", array( $start_date, $end_date, $args['post_type'], $args['number'] ) );
+	$post_types = join(',', array_map( function( $v ) {
+		return "'" . esc_sql( $v ) . "'";
+	}, $args['post_type'] ) );
+	$sql        = $wpdb->prepare( "SELECT p.id, SUM(visitors) As visitors, SUM(pageviews) AS pageviews FROM {$wpdb->prefix}koko_analytics_post_stats s JOIN {$wpdb->posts} p ON s.id = p.id WHERE p.id > 0 AND s.date >= %s AND s.date <= %s AND p.post_type IN ($post_types) AND p.post_status = 'publish' GROUP BY s.id ORDER BY pageviews DESC LIMIT 0, %d", array( $start_date, $end_date, $args['number'] ) );
 	$results    = $wpdb->get_results( $sql );
 	if ( empty( $results ) ) {
 		return array();
@@ -156,7 +175,7 @@ function admin_bar_menu( $wp_admin_bar ) {
 }
 
 function widgets_init() {
-	require __DIR__ . '/class-widget-most-viewed-posts.php';
+	require KOKO_ANALYTICS_PLUGIN_DIR . '/src/class-widget-most-viewed-posts.php';
 	register_widget( 'KokoAnalytics\Widget_Most_Viewed_Posts' );
 }
 

@@ -1,12 +1,12 @@
 import {useState, useCallback} from '@wordpress/element';
 import {registerPaymentMethod, registerExpressPaymentMethod} from '@woocommerce/blocks-registry';
 import {getSetting} from '@woocommerce/settings';
-import {__, sprintf} from '@wordpress/i18n';
+import {__} from '@wordpress/i18n';
+import SimplePayPal from './simple-paypal';
 import {useBreakpointWidth, useLoadPayPalScript} from "../../hooks";
 import {usePayPalOptions, usePayPalFundingSources, useProcessPayment, useValidateCheckout} from "./hooks";
 import './styles.scss';
 import {useProcessPaymentFailure} from "../../hooks";
-import {isAddressValid, isUserAdmin} from "../../utils";
 
 const getData = (key) => {
     const data = getSetting(key);
@@ -128,18 +128,7 @@ const PayPalPaymentMethod = (
         e.preventDefault();
         setPaymentData(null);
     }
-    if (isExpress && paymentData) {
-        const validAddress = isAddressValid(billingData);
-        return (
-            <div>
-                {!validAddress &&
-                    <p className='wc-ppcp-payment__notice'>{__('Please fill out all required fields and click Place Order.', 'pymntpl-paypal-woocommerce')}</p>}
-                {isUserAdmin() && !validAddress &&
-                    <p className='wc-ppcp-payment__notice'>{__('Admin notice: In order for customer billing address details to be auto-populated you ' +
-                        'must contact PayPal Support and request this feature.', 'pymntpl-paypal-woocommerce')}</p>}
-            </div>
-        )
-    }
+
     if (!isExpress && paymentData) {
         return (
             <>
@@ -186,9 +175,7 @@ const PaymentMethodLabel = ({components, title, icons, id}) => {
 const ErrorMessage = ({msg}) => {
     if (msg) {
         return (
-            <div className={'wc-ppcp-error__message'}>
-                {msg}
-            </div>
+            <div className={'wc-ppcp-error__message'} dangerouslySetInnerHTML={{__html: msg}}/>
         )
     }
     return null;
@@ -206,22 +193,42 @@ if (isExpressEnabled()) {
     });
 }
 
-registerPaymentMethod({
-    name: 'ppcp',
-    label: <PaymentMethodLabel
-        id='ppcp'
-        title={data('title')}
-        icons={data('icons')}/>,
-    ariaLabel: 'PayPal',
-    canMakePayment: () => true,
-    content: <PayPalPaymentMethod context={'checkout'} paymentMethodId={'ppcp'}/>,
-    edit: <PayPalPaymentMethod context={'checkout'} paymentMethodId={'ppcp'}/>,
-    supports: {
-        showSavedCards: false,
-        showSaveOption: false,
-        features: data('features')
-    }
-});
+if (data('placeOrderButtonEnabled')) {
+    registerPaymentMethod({
+        name: 'ppcp',
+        label: <PaymentMethodLabel
+            id='ppcp'
+            title={data('title')}
+            icons={data('icons')}/>,
+        ariaLabel: 'PayPal',
+        canMakePayment: () => true,
+        content: <SimplePayPal data={data}/>,
+        edit: <SimplePayPal data={data}/>,
+        placeOrderButtonLabel: data('i18n').buttonLabel,
+        supports: {
+            showSavedCards: false,
+            showSaveOption: false,
+            features: data('features')
+        }
+    });
+} else {
+    registerPaymentMethod({
+        name: 'ppcp',
+        label: <PaymentMethodLabel
+            id='ppcp'
+            title={data('title')}
+            icons={data('icons')}/>,
+        ariaLabel: 'PayPal',
+        canMakePayment: () => true,
+        content: <PayPalPaymentMethod context={'checkout'} paymentMethodId={'ppcp'}/>,
+        edit: <PayPalPaymentMethod context={'checkout'} paymentMethodId={'ppcp'}/>,
+        supports: {
+            showSavedCards: false,
+            showSaveOption: false,
+            features: data('features')
+        }
+    });
+}
 
 
 

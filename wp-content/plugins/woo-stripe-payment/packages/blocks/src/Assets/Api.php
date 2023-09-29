@@ -29,7 +29,7 @@ class Api {
 
 	private function init() {
 		foreach ( array( 'cart', 'checkout' ) as $page ) {
-			add_action( "woocommerce_blocks_enqueue_${page}_block_scripts_after", array( $this, 'enqueue_style' ) );
+			add_action( "woocommerce_blocks_enqueue_{$page}_block_scripts_after", array( $this, 'enqueue_style' ) );
 		}
 		$this->register_script( $this->commons_script_name, 'build/commons.js' );
 	}

@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInitbd31d08083145fa63be96add0d6840d0
+class ComposerStaticInitde66a9cb9d76cc011614261e63bdd80f
 {
     public static $prefixLengthsPsr4 = array (
         'P' => 
@@ -12,6 +12,7 @@ class ComposerStaticInitbd31d08083145fa63be96add0d6840d0
             'PaymentPlugins\\WooCommerce\\PPCP\\' => 32,
             'PaymentPlugins\\PayPalSDK\\' => 25,
             'PaymentPlugins\\PPCP\\WooFunnels\\' => 31,
+            'PaymentPlugins\\PPCP\\WooCommerceShipStation\\' => 43,
             'PaymentPlugins\\PPCP\\WooCommerceExtraProductOptions\\' => 51,
             'PaymentPlugins\\PPCP\\Stripe\\' => 27,
             'PaymentPlugins\\PPCP\\MondialRelay\\' => 33,
@@ -33,6 +34,10 @@ class ComposerStaticInitbd31d08083145fa63be96add0d6840d0
         'PaymentPlugins\\PPCP\\WooFunnels\\' => 
         array (
             0 => __DIR__ . '/../..' . '/packages/woofunnels/src',
+        ),
+        'PaymentPlugins\\PPCP\\WooCommerceShipStation\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/packages/woocommerce-shipstation/src',
         ),
         'PaymentPlugins\\PPCP\\WooCommerceExtraProductOptions\\' => 
         array (
@@ -141,9 +146,9 @@ class ComposerStaticInitbd31d08083145fa63be96add0d6840d0
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInitbd31d08083145fa63be96add0d6840d0::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInitbd31d08083145fa63be96add0d6840d0::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInitbd31d08083145fa63be96add0d6840d0::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitde66a9cb9d76cc011614261e63bdd80f::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitde66a9cb9d76cc011614261e63bdd80f::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitde66a9cb9d76cc011614261e63bdd80f::$classMap;
 
         }, null, ClassLoader::class);
     }

@@ -1,8 +1,11 @@
 <?php
+
 return array(
 	'desc'                 => array(
 		'type'        => 'description',
-		'description' => sprintf( '<div class="wc-stripe-register-domain"><button class="button button-secondary api-register-domain">%s</button></div><p>%s</p>', __( 'Register Domain', 'woo-stripe-payment' ), sprintf( __( 'This plugin attemps to add the domain association file to your server automatically when you click the Register Domain button. If that fails due to file permssions, you must add the <strong>%1$s.well-known/apple-developer-merchantid-domain-association%2$s</strong> file to your domain  and register your domain within the Stripe Dashboard.', 'woo-stripe-payment' ), '<a href="https://stripe.com/files/apple-pay/apple-developer-merchantid-domain-association">', '</a>' ) ) .
+		'description' => sprintf( '<div class="wc-stripe-register-domain"><button class="button button-secondary api-register-domain">%s</button></div><p>%s</p>', __( 'Register Domain', 'woo-stripe-payment' ),
+				sprintf( __( 'This plugin attemps to add the domain association file to your server automatically when you click the Register Domain button. If that fails due to file permssions, you must add the <strong>%1$s.well-known/apple-developer-merchantid-domain-association%2$s</strong> file to your domain  and register your domain within the Stripe Dashboard.',
+					'woo-stripe-payment' ), '<a href="https://stripe.com/files/apple-pay/apple-developer-merchantid-domain-association">', '</a>' ) ) .
 		                 '<p>' .
 		                 __( 'In order for Apple Pay to display, you must test with an iOS device and have a payment method saved in the Apple Wallet.', 'woo-stripe-payment' ) .
 		                 '</p>',
@@ -75,7 +78,8 @@ return array(
 		'class'       => 'wc-enhanced-select',
 		'options'     => array_merge( array( 'default' => __( 'Default', 'woo-stripe-payment' ) ), wc_get_order_statuses() ),
 		'tool_tip'    => true,
-		'description' => __( 'This is the status of the order once payment is complete. If <b>Default</b> is selected, then WooCommerce will set the order status automatically based on internal logic which states if a product is virtual and downloadable then status is set to complete. Products that require shipping are set to Processing. Default is the recommended setting as it allows standard WooCommerce code to process the order status.', 'woo-stripe-payment' ),
+		'description' => __( 'This is the status of the order once payment is complete. If <b>Default</b> is selected, then WooCommerce will set the order status automatically based on internal logic which states if a product is virtual and downloadable then status is set to complete. Products that require shipping are set to Processing. Default is the recommended setting as it allows standard WooCommerce code to process the order status.',
+			'woo-stripe-payment' ),
 	),
 	'button_section'       => array(
 		'type'  => 'title',
@@ -83,7 +87,7 @@ return array(
 	),
 	'button_style'         => array(
 		'type'        => 'select',
-		'title'       => __( 'Button Design', 'woo-stripe-payment' ),
+		'title'       => __( 'Button Style', 'woo-stripe-payment' ),
 		'class'       => 'wc-enhanced-select',
 		'default'     => 'apple-pay-button-black',
 		'options'     => array(
@@ -92,6 +96,17 @@ return array(
 			'apple-pay-button-white'           => __( 'White Button', 'woo-stripe-payment' ),
 		),
 		'description' => __( 'This is the style for all Apple Pay buttons presented on your store.', 'woo-stripe-payment' ),
+	),
+	'button_design'        => array(
+		'title'       => __( 'Button Design', 'woo-stripe-payment' ),
+		'type'        => 'select',
+		'default'     => 'standard',
+		'options'     => array(
+			'standard' => __( 'Standard', 'woo-stripe-pamyent' ),
+			'rounded'  => __( 'Rounded', 'woo-stripe-payment' )
+		),
+		'desc_tip'    => true,
+		'description' => __( 'Choose between the standard button or rounded corners.', 'woo-stripe-payment' )
 	),
 	'button_type_checkout' => array(
 		'title'   => __( 'Checkout button type', 'woo-stripe-payment' ),
@@ -122,5 +137,5 @@ return array(
 			'check-out' => __( 'Checkout with Apple Pay', 'woo-stripe-payment' )
 		),
 		'default' => 'buy',
-	),
+	)
 );

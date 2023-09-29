@@ -161,7 +161,13 @@ export const submitErrorMessage = (error, container, context = 'checkout') => {
     if (context == 'checkout') {
         classes += ' woocommerce-NoticeGroup-checkout';
     }
-    msg = '<div class="' + classes + '"><ul class="woocommerce-error"><li>' + msg + '</li></ul></div>';
+    if (Array.isArray(error)) {
+        msg = '<div class="' + classes + '"><ul class="woocommerce-error"><li>' + error.join('</li><li>') + '</li></ul></div>';
+    } else if (typeof error === 'string' && /<[^>]*>/.test(error)) {
+        msg = '<div class="' + classes + '">' + error + '</div>';
+    } else {
+        msg = '<div class="' + classes + '"><ul class="woocommerce-error"><li>' + msg + '</li></ul></div>';
+    }
     $('.woocommerce-NoticeGroup-checkout, .woocommerce-error, .woocommerce-message').remove();
     $container.prepend(msg);
     if ($.scroll_to_notices) {

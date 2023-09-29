@@ -12,6 +12,7 @@ return array(
     'KokoAnalytics\\Command' => $baseDir . '/src/class-command.php',
     'KokoAnalytics\\Endpoint_Installer' => $baseDir . '/src/class-endpoint-installer.php',
     'KokoAnalytics\\Migrations' => $baseDir . '/src/class-migrations.php',
+    'KokoAnalytics\\Pageview_Aggregator' => $baseDir . '/src/class-pageview-aggregator.php',
     'KokoAnalytics\\Plugin' => $baseDir . '/src/class-plugin.php',
     'KokoAnalytics\\Pruner' => $baseDir . '/src/class-pruner.php',
     'KokoAnalytics\\Rest' => $baseDir . '/src/class-rest.php',

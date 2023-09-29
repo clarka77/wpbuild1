@@ -93,6 +93,19 @@ class WooCommercePreOrders implements PluginIntegrationType {
 				$payment_method->payment_handler->set_use_billing_agreement( true );
 				\WC_Pre_Orders_Order::mark_order_as_pre_ordered( $order );
 				$result = true;
+			} else {
+				$this->factories->initialize( $order );
+				$this->factories->billingAgreement->set_needs_shipping( false );
+				$params = $this->factories->billingAgreement->from_order( $payment_method );
+				$token  = $this->client->orderMode( $order )->billingAgreementTokens->create( $params );
+				if ( is_wp_error( $token ) ) {
+					return $token;
+				}
+
+				return [
+					'result'   => 'success',
+					'redirect' => $token->getApprovalUrl()
+				];
 			}
 		}
 

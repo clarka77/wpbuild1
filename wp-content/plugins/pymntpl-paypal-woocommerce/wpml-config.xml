@@ -5,6 +5,7 @@
             <key name="title_text"/>
             <key name="description"/>
             <key name="billing_agreement_description"/>
+            <key name="order_button_text"/>
         </key>
         <key name="woocommerce_ppcp_advanced_settings">
             <key name="display_name"/>

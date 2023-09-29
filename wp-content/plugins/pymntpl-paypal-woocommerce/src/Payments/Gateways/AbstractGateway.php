@@ -214,6 +214,9 @@ abstract class AbstractGateway extends \WC_Payment_Gateway {
 
 				return $result->get_failure_response();
 			} else {
+				if ( $result->needs_approval() ) {
+					return $result->get_approval_response();
+				}
 				WC()->cart->empty_cart();
 
 				return $result->get_success_response();
@@ -291,6 +294,10 @@ abstract class AbstractGateway extends \WC_Payment_Gateway {
 		}
 
 		return parent::get_transaction_url( $order );
+	}
+
+	public function is_place_order_button() {
+		return true;
 	}
 
 }

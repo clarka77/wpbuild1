@@ -345,6 +345,9 @@ class Main {
 		$this->container->register( \PaymentPlugins\PPCP\WooCommerceExtraProductOptions\Package::class, function ( $container ) {
 			return new \PaymentPlugins\PPCP\WooCommerceExtraProductOptions\Package( $container, $this->version );
 		} );
+		$this->container->register( \PaymentPlugins\PPCP\WooCommerceShipStation\Package::class, function ( $container ) {
+			return new \PaymentPlugins\PPCP\WooCommerceShipStation\Package( $container, $this->version );
+		} );
 
 
 		$this->container->register( PackageRegistry::class, function ( $container ) {
@@ -359,7 +362,8 @@ class Main {
 				\PaymentPlugins\PPCP\WooFunnels\Package::class,
 				\PaymentPlugins\PPCP\MondialRelay\Package::class,
 				\PaymentPlugins\PPCP\Elementor\Package::class,
-				\PaymentPlugins\PPCP\WooCommerceExtraProductOptions\Package::class
+				\PaymentPlugins\PPCP\WooCommerceExtraProductOptions\Package::class,
+				\PaymentPlugins\PPCP\WooCommerceShipStation\Package::class
 			] );
 
 			return $package_controller;

@@ -4,6 +4,7 @@ namespace PaymentPlugins\WooCommerce\PPCP\Factories;
 
 use PaymentPlugins\PayPalSDK\Collection;
 use PaymentPlugins\PayPalSDK\Order;
+use PaymentPlugins\PayPalSDK\OrderApplicationContext;
 use PaymentPlugins\PayPalSDK\PurchaseUnit;
 use PaymentPlugins\WooCommerce\PPCP\Utilities\NumberUtil;
 
@@ -41,6 +42,8 @@ class OrderFactory extends AbstractFactory {
 			->setPayer( $this->factories->payer->from_order() )
 			->setPurchaseUnits( new Collection( [ $this->factories->purchaseUnit->from_order() ] ) )
 			->setApplicationContext( $this->factories->applicationContext->get( $needs_shipping, true ) );
+
+		$order->getApplicationContext()->setUserAction( OrderApplicationContext::PAY_NOW );
 
 		/**
 		 * @since 1.0.13

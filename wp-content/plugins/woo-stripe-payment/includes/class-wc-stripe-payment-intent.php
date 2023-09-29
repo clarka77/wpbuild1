@@ -345,20 +345,27 @@ class WC_Stripe_Payment_Intent extends WC_Stripe_Payment {
 	}
 
 	/**
+	 * @param float         $amount
+	 * @param WC_Order      $order
+	 * @param Stripe\Charge $charge
 	 *
-	 * {@inheritDoc}
-	 *
-	 * @see WC_Stripe_Payment::capture_charge()
+	 * @return mixed|\Stripe\Charge|\Stripe\PaymentIntent|\Stripe\StripeObject
+	 * @throws \Stripe\Exception\ApiErrorException
 	 */
-	public function capture_charge( $amount, $order ) {
+	public function capture_charge( $amount, $order, $charge = null ) {
 		$payment_intent = $this->payment_method->get_order_meta_data( WC_Stripe_Constants::PAYMENT_INTENT_ID, $order );
-		if ( empty( $payment_intent ) ) {
-			$charge         = $this->gateway->charges->mode( wc_stripe_order_mode( $order ) )->retrieve( $order->get_transaction_id() );
+		if ( empty( $payment_intent ) && $charge ) {
 			$payment_intent = $charge->payment_intent;
 			$order->update_meta_data( WC_Stripe_Constants::PAYMENT_INTENT_ID, $payment_intent );
 			$order->save();
 		}
-		$params = apply_filters( 'wc_stripe_payment_intent_capture_args', array( 'amount_to_capture' => wc_stripe_add_number_precision( $amount, $order->get_currency() ) ), $amount, $order );
+		$args = array( 'amount_to_capture' => wc_stripe_add_number_precision( $amount, $order->get_currency() ) );
+
+		// Link does not currently support level3
+		if ( $charge && isset( $charge->payment_method_details->type ) && $charge->payment_method_details->type !== 'link' ) {
+			$this->add_level3_order_data( $args, $order, true );
+		}
+		$params = apply_filters( 'wc_stripe_payment_intent_capture_args', $args, $amount, $order );
 
 		$result = $this->gateway->mode( wc_stripe_order_mode( $order ) )->paymentIntents->capture( $payment_intent, $params );
 		if ( ! is_wp_error( $result ) ) {
@@ -592,7 +599,7 @@ class WC_Stripe_Payment_Intent extends WC_Stripe_Payment {
 	 *
 	 * @return void
 	 */
-	protected function add_level3_order_data( &$args, $order ) {
+	protected function add_level3_order_data( &$args, $order, $capture = false ) {
 		if ( $this->payment_method->get_payment_method_type() === 'card'
 		     && stripe_wc()->account_settings->get_account_country( wc_stripe_order_mode( $order ) ) === 'US'
 		     && stripe_wc()->account_settings->has_completed_connect_process( wc_stripe_order_mode( $order ) )
@@ -634,7 +641,7 @@ class WC_Stripe_Payment_Intent extends WC_Stripe_Payment {
 				}
 				$line_item->product_description = substr( $item->get_name(), 0, 26 );
 				$line_item->unit_cost           = wc_stripe_add_number_precision( (float) $item_total / (float) $item->get_quantity(), $currency );
-				$line_item->quantity            = $item->get_quantity();
+				$line_item->quantity            = round( $item->get_quantity() );
 				$line_item->tax_amount          = wc_stripe_add_number_precision( $item->get_total_tax(), $currency );
 				$line_item->discount_amount     = wc_stripe_add_number_precision( (float) $item_total - (float) $item->get_total(), $currency );
 
@@ -649,12 +656,12 @@ class WC_Stripe_Payment_Intent extends WC_Stripe_Payment {
 			 * perform a validation of the line_items to make sure their totals equal the order total.
 			 * total amount = sum(unit_cost * quantity) + sum(tax_amount) - sum(discount_amount) + shipping_amount
 			 */
-			$diff = $args['amount'] - ( $totals->subtotal + $totals->tax - $totals->discount + $totals->shipping_amount );
+			$diff = ( ! $capture ? $args['amount'] : $args['amount_to_capture'] ) - ( $totals->subtotal + $totals->tax - $totals->discount + $totals->shipping_amount );
 
 			if ( abs( $diff ) >= 1 ) {
 				$line_item = array(
-					'product_code'        => 'conversion',
-					'product_description' => 'Conversion',
+					'product_code'        => ! $capture ? 'conversion' : 'capture_diff',
+					'product_description' => ! $capture ? 'Conversion' : 'Capture Difference',
 					'quantity'            => 1,
 					'tax_amount'          => 0
 				);

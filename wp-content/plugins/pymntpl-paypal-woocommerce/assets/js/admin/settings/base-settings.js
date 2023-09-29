@@ -28,6 +28,11 @@ class BaseSettings {
 
     handleInputChange(e) {
         this.maybeShowDependencies();
+        if ($(e.currentTarget).attr('name') === 'woocommerce_ppcp_use_place_order') {
+            if ($(e.currentTarget).is(':checked')) {
+                $('#woocommerce_ppcp_checkout_placement').val('place_order').trigger('change');
+            }
+        }
     }
 
     /**

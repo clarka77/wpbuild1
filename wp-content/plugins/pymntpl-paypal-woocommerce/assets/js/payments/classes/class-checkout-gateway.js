@@ -98,7 +98,6 @@ class CheckoutGateway extends BaseGateway {
                     }
                 }
                 this.setVariable('readyToCheckout', true);
-                //this.readyToCheckout = true;
                 this.hidePaymentButton();
                 if (this.needsShipping() && $('[name="ship_to_different_address"]')?.length) {
                     const bool = !isEqual(this.getCartAddress('billing'), this.getCartAddress('shipping'))
@@ -112,11 +111,18 @@ class CheckoutGateway extends BaseGateway {
 
     createOrder(data, actions) {
         if (this.isPage('checkout')) {
-            const formData = {...this.convertFormToData(), ppcp_payment_type: this.getPaymentType()};
+            const formData = {...this.convertFormToData(), context: this.getPaymentType()};
             return this.cart.createOrder(formData);
         } else {
             return this.cart.doOrderPay(this.id);
         }
+    }
+
+    createBillingAgreement(data, actions, extraData = null) {
+        if (this.isPage('checkout')) {
+            extraData = {...this.convertFormToData(), context: this.getPaymentType()};
+        }
+        return super.createBillingAgreement(data, actions, extraData);
     }
 
     createButton() {
@@ -187,7 +193,10 @@ class CheckoutGateway extends BaseGateway {
     }
 
     submitError(error) {
-        submitErrorMessage(error, this.getForm(), 'checkout');
+        if (error?.code === 'validation_errors') {
+            return submitErrorMessage(error.data.messages, this.getForm(), 'checkout');
+        }
+        return submitErrorMessage(error, this.getForm(), 'checkout');
     }
 
     getShippingPrefix() {
@@ -227,12 +236,35 @@ class CheckoutGateway extends BaseGateway {
     }
 
     handleBillingToken(token, data) {
+        this.update_required = this.isCheckoutReviewRequired(token);
         super.handleBillingToken(token);
-        if (this.needsShipping()) {
-            this.update_required = true;
-        }
         this.maybeShipToDifferentAddress();
         this.processCheckout(data);
+    }
+
+    isCheckoutReviewRequired(token) {
+        if (this.needsShipping() && !this.isPayPalAddressDisabled()) {
+            // if the address changed, then an update is required
+            if (!isEmpty(token.shipping_address)) {
+                if (!isEqual(
+                    {
+                        city: token.shipping_address.city,
+                        state: token.shipping_address.state,
+                        postal_code: token.shipping_address.postal_code,
+                        country_code: token.shipping_address.country_code
+                    },
+                    {
+                        city: getFieldValue('shipping_city'),
+                        state: getFieldValue('shipping_state'),
+                        postal_code: getFieldValue('shipping_postcode'),
+                        country_code: getFieldValue('shipping_country')
+                    }
+                )) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     populateCheckoutFields(response) {
@@ -423,6 +455,10 @@ class CheckoutGateway extends BaseGateway {
 
     getPaymentType() {
         return 'checkout';
+    }
+
+    isPayPalAddressDisabled() {
+        return this.settings.paypalAddressDisabled;
     }
 }
 

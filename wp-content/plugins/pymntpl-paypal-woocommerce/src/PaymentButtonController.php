@@ -118,7 +118,10 @@ class PaymentButtonController {
 		$payment_methods    = $this->payment_gateways->get_express_payment_gateways();
 		$available_gateways = $this->payment_gateways->filter_by_available( $payment_methods );
 		if ( $this->render_express_buttons && ! empty( $payment_methods ) ) {
-			if ( $get_template ) {
+			// Perform equality of value and type in if statement. This is done because if
+			// the method is added to another action that has arguments, this could pass as true
+			// and have unexpected results
+			if ( $get_template === true ) {
 				return $this->template_loader->load_template_html( 'checkout/express-checkout.php', [
 					'payment_methods'    => $payment_methods,
 					'available_gateways' => $available_gateways

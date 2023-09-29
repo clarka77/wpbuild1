@@ -2,7 +2,7 @@
 /*
 Plugin Name: Koko Analytics
 Plugin URI: https://www.kokoanalytics.com/#utm_source=wp-plugin&utm_medium=koko-analytics&utm_campaign=plugins-page
-Version: 1.0.39
+Version: 1.0.40
 Description: Privacy-friendly analytics for your WordPress site.
 Author: ibericode
 Author URI: https://ibericode.com/#utm_source=wp-plugin&utm_medium=koko-analytics&utm_campaign=plugins-page
@@ -13,7 +13,7 @@ License URI: https://www.gnu.org/licenses/gpl-3.0.txt
 
 Koko Analytics - website analytics plugin for WordPress
 
-Copyright (C) 2019 - 2022, Danny van Kooten, hi@dannyvankooten.com
+Copyright (C) 2019 - 2023, Danny van Kooten, hi@dannyvankooten.com
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace KokoAnalytics;
 
-define( 'KOKO_ANALYTICS_VERSION', '1.0.39' );
+define( 'KOKO_ANALYTICS_VERSION', '1.0.40' );
 define( 'KOKO_ANALYTICS_PLUGIN_FILE', __FILE__ );
 define( 'KOKO_ANALYTICS_PLUGIN_DIR', __DIR__ );
 
@@ -42,7 +42,6 @@ require __DIR__ . '/src/class-endpoint-installer.php';
 if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 	maybe_collect_request();
 } elseif ( is_admin() ) {
-	require __DIR__ . '/src/class-migrations.php';
 	require __DIR__ . '/src/class-admin.php';
 	$admin = new Admin();
 	$admin->init();
@@ -55,8 +54,13 @@ if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
 }
 
 require __DIR__ . '/src/class-aggregator.php';
+require __DIR__ . '/src/class-pageview-aggregator.php';
 $aggregator = new Aggregator();
 $aggregator->init();
+
+require __DIR__ . '/src/class-plugin.php';
+$plugin = new Plugin( $aggregator );
+$plugin->init();
 
 require __DIR__ . '/src/class-rest.php';
 $rest = new Rest();
@@ -69,10 +73,6 @@ $shortcode->init();
 require __DIR__ . '/src/class-pruner.php';
 $pruner = new Pruner();
 $pruner->init();
-
-require __DIR__ . '/src/class-plugin.php';
-$plugin = new Plugin( $aggregator );
-$plugin->init();
 
 if ( class_exists( 'WP_CLI' ) ) {
 	require __DIR__ . '/src/class-command.php';

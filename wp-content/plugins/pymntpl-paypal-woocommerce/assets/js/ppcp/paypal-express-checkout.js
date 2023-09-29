@@ -74,6 +74,10 @@ class PayPalExpressCheckoutGateway extends CheckoutGateway {
     getPaymentType() {
         return 'express';
     }
+
+    isCheckoutReviewRequired(token) {
+        return true;
+    }
 }
 
 new PayPalExpressCheckoutGateway(cart, {id: 'ppcp', context: 'checkout'});

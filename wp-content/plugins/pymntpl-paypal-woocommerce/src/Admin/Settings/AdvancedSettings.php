@@ -15,6 +15,7 @@ class AdvancedSettings extends AbstractSettings {
 		$this->tab_label = __( 'Advanced Settings', 'pymntpl-paypal-woocommerce' );
 		parent::__construct( ...$args );
 		add_action( 'wc_ppcp_paypal_query_params', [ $this, 'add_query_params' ] );
+		add_filter( 'wc_ppcp_add_payment_method_data', [ $this, 'add_payment_method_data' ], 10, 2 );
 	}
 
 	public function init_form_fields() {
@@ -158,6 +159,20 @@ class AdvancedSettings extends AbstractSettings {
 				$params->locale = $locale;
 			}
 		}
+	}
+
+	/**
+	 * @param array                                           $data
+	 * @param \PaymentPlugins\WooCommerce\PPCP\ContextHandler $context
+	 *
+	 * @return void
+	 */
+	public function add_payment_method_data( $data, $context ) {
+		if ( $context->is_checkout() ) {
+			$data['paypalAddressDisabled'] = $this->is_shipping_address_disabled();
+		}
+
+		return $data;
 	}
 
 }

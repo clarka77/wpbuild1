@@ -1,6 +1,6 @@
 import $ from 'jquery';
 import PayLaterBaseMessage from "./base";
-import {getPayPalQueryParams, loadPayPalSdk} from "@ppcp/utils";
+import {getSetting, getPayPalQueryParams, loadPayPalSdk} from "@ppcp/utils";
 import cart from '@ppcp/cart';
 
 class PayLaterMessageCheckout extends PayLaterBaseMessage {
@@ -44,7 +44,14 @@ class PayLaterMessageCheckout extends PayLaterBaseMessage {
     }
 }
 
-loadPayPalSdk().then(paypal => {
+let params = null;
+const paypalGatewayData = getSetting('ppcp_data');
+
+if (paypalGatewayData && paypalGatewayData.placeOrderEnabled) {
+    params = getPayPalQueryParams();
+}
+
+loadPayPalSdk(params).then(paypal => {
     new PayLaterMessageCheckout(paypal, cart, {queryParams: getPayPalQueryParams()});
 })
 

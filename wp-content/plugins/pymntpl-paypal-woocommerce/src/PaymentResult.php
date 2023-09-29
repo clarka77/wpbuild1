@@ -129,6 +129,15 @@ class PaymentResult {
 		return apply_filters( 'wc_ppcp_process_payment_error_response', $data, $this->order, $this->payment_method );
 	}
 
+	public function get_approval_response() {
+		$data = [
+			'result'   => 'success',
+			'redirect' => $this->get_approval_url()
+		];
+
+		return apply_filters( 'wc_ppcp_process_payment_approval_response', $data, $this->order, $this->payment_method );
+	}
+
 	public function get_success_response() {
 		return apply_filters( 'wc_ppcp_process_payment_success_response', [
 			'result'   => 'success',
@@ -142,6 +151,10 @@ class PaymentResult {
 	 * @return void
 	 */
 	public function needs_approval() {
+		if ( $this->success && $this->paypal_order && $this->paypal_order->isCreated() ) {
+			return true;
+		}
+
 		return ! $this->success()
 		       && ( $this->error_code === 'PAYER_ACTION_REQUIRED'
 		            || $this->error_code === 'ORDER_NOT_APPROVED' );

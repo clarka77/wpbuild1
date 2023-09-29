@@ -1,5 +1,8 @@
 == Changelog ==
 
+= 4.2.0 (2023-09-11) =
+* `[Fixed]` Duplicated search results for modified SQL query
+
 = 4.1.1 (2023-06-29) =
 * `[Added]` Filter `acfbs_field_types` to add new supported field types
 

@@ -1264,7 +1264,7 @@ function wc_stripe_get_checkout_fields() {
 		$order = wc_get_order( absint( ( $wp->query_vars['order-pay'] ) ) );
 	}
 	foreach ( array( 'billing', 'shipping' ) as $key ) {
-		if ( ( $field_set = WC()->checkout()->get_checkout_fields( $key ) ) ) {
+		if ( ( $field_set = @WC()->checkout()->get_checkout_fields( $key ) ) ) {
 			$fields = array_merge( $fields, $field_set );
 		}
 	}

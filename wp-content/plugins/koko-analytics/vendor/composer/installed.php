@@ -3,7 +3,7 @@
         'name' => 'ibericode/koko-analytics',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'd86e10701b494dba26a1b149d80ec1087398d51d',
+        'reference' => 'cdde22df6296e680478c157628a756b8513882af',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'ibericode/koko-analytics' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'd86e10701b494dba26a1b149d80ec1087398d51d',
+            'reference' => 'cdde22df6296e680478c157628a756b8513882af',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

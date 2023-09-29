@@ -52,58 +52,68 @@ class PaymentHandler {
 	public function process_payment( \WC_Order $order ) {
 		$this->set_processing( 'payment' );
 		$this->factories->initialize( $order );
+		$paypal_order = null;
+		$needs_update = false;
 		try {
 			if ( $this->use_billing_agreement ) {
-				$paypal_order = $this->client->orderMode( $order )->orders->create(
-					apply_filters( 'wc_ppcp_create_order_params', $this->get_create_order_params( $order ), $order, $this )
-				);
+				$paypal_order = $this->client->orderMode( $order )->orders->create( $this->get_create_order_params( $order ) );
 			} else {
 				$paypal_order_id = $this->get_paypal_order_id_from_request();
 				if ( ! $paypal_order_id ) {
 					$paypal_order_id = $this->cache->get( Constants::PAYPAL_ORDER_ID );
 					if ( ! $paypal_order_id ) {
-						throw new \Exception( __( 'Please click the PayPal button before proceeding with your order.', 'pymntpl-paypal-woocommerce' ) );
+						$paypal_order = $this->client->orderMode( $order )->orders->create( $this->get_create_order_params( $order ) );
 					}
 				}
-				$paypal_order = $this->client->orderMode( $order )->orders->retrieve( $paypal_order_id );
+				if ( ! $paypal_order ) {
+					$needs_update = true;
+					$paypal_order = $this->client->orderMode( $order )->orders->retrieve( $paypal_order_id );
+				}
 			}
 			if ( is_wp_error( $paypal_order ) ) {
 				throw new \Exception( $paypal_order->get_error_message() );
 			}
 			$paypal_order_id = $paypal_order->getId();
 			if ( ! $paypal_order->isComplete() ) {
-				if ( ! $this->use_billing_agreement ) {
+				if ( ! $this->use_billing_agreement && $needs_update ) {
 					// update the order, so it has the most recent order data.
 					$response = $this->client->orders->update( $paypal_order->getId(), $this->get_update_order_params( $order, $paypal_order ) );
 					if ( is_wp_error( $response ) ) {
 						throw new \Exception( $response->get_error_message() );
 					}
 				}
-
-				if ( Order::CAPTURE === $paypal_order->intent ) {
-					OrderLock::set_order_lock( $order );
-					$paypal_order = $this->client->orders->capture( $paypal_order->getId(), $this->get_payment_source( $order ) );
-				} else {
-					$paypal_order = $this->client->orders->authorize( $paypal_order->getId(), $this->get_payment_source( $order ) );
+				// only try to process payment if this order is the result of a billing agreement (subscription, pre-order etc)
+				// or the order has been approved.
+				if ( ( $this->use_billing_agreement && $paypal_order->isCreated() ) || $paypal_order->getStatus() === Order::APPROVED ) {
+					if ( Order::CAPTURE === $paypal_order->intent ) {
+						OrderLock::set_order_lock( $order );
+						$paypal_order = $this->client->orders->capture( $paypal_order->getId(), $this->get_payment_source( $order ) );
+					} else {
+						$paypal_order = $this->client->orders->authorize( $paypal_order->getId(), $this->get_payment_source( $order ) );
+					}
 				}
 			}
 			$result = new PaymentResult( $paypal_order, $order, $this->payment_method );
 			$result->set_paypal_order_id( $paypal_order_id );
 			$result->set_environment( $this->client->getEnvironment() );
 
-			if ( $result->success() ) {
-				$this->payment_complete( $order, $result );
-			} else {
-				if ( $result->already_captured() || $result->already_authorized() ) {
-					$paypal_order = $this->client->orders->retrieve( $paypal_order_id );
-					$result->initialize( $paypal_order );
+			// If the order doesn't need approval, then we can proceed with processing it.
+			if ( ! $result->needs_approval() ) {
+				if ( $result->success() ) {
 					$this->payment_complete( $order, $result );
 				} else {
-					$order->update_status( 'failed' );
-					$order->add_order_note( sprintf( __( 'Error processing payment. Reason: %s', 'pymntpl-paypal-woocommerce' ),
-						$result->get_error_message() ) );
+					if ( $result->already_captured() || $result->already_authorized() ) {
+						$paypal_order = $this->client->orders->retrieve( $paypal_order_id );
+						$result->initialize( $paypal_order );
+						$this->payment_complete( $order, $result );
+					} else {
+						$order->update_status( 'failed' );
+						$order->add_order_note( sprintf( __( 'Error processing payment. Reason: %s', 'pymntpl-paypal-woocommerce' ),
+							$result->get_error_message() ) );
+					}
 				}
 			}
+
 			OrderLock::release_order_lock( $order );
 
 			return $result;
@@ -188,7 +198,7 @@ class PaymentHandler {
 			unset( $purchase_unit->items );
 		}
 
-		return $paypal_order;
+		return apply_filters( 'wc_ppcp_create_order_params', $paypal_order, $order, $this );
 	}
 
 	protected function get_update_order_params( \WC_Order $order, Order $paypal_order ) {

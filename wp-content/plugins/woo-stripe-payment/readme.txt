@@ -4,7 +4,7 @@ Tags: stripe, ach, klarna, credit card, apple pay, google pay, ideal, sepa, sofo
 Requires at least: 3.0.1
 Tested up to: 6.3
 Requires PHP: 5.6
-Stable tag: 3.3.48
+Stable tag: 3.3.50
 Copyright: Payment Plugins
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -63,6 +63,13 @@ If your site is not loading over https, then Stripe won't render the Payment Req
 9. Stripe Link for high conversion
 
 == Changelog ==
+= 3.3.50 - 9/22/23 =
+* Fixed - Don't include level3 property in requests where the payment intent is authorized and Link is used. Stripe doesn't currently support
+capturing authorized amounts when using Link with level3.
+* Fixed - Don't allow quantity property of level3 data to contain decimals. Some plugins modify the quantity so it has decimals.
+* Added - Rounded corner option for Apple Pay button
+= 3.3.49 - 9/9/23 =
+* Fixed - Capture error when amount is less than authorized amount and level3 data is passed.
 = 3.3.48 - 9/3/23 =
 * Fixed - For local payment methods like P24 etc, unset address properties that are empty. Some merchants remove address fields like billing_country so remove those in requests to Stripe to prevent API validation errors.
 * Fixed - If Link is used to pay for a renewal, update the subscriptions payment method ID.

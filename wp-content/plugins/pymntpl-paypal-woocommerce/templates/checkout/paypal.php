@@ -13,8 +13,12 @@
             <div class="wc-ppcp-popup__container">
                 <img src="<?php echo esc_url( $assets->assets_url( 'assets/img/popup.svg' ) ) ?>"/>
                 <p>
+					<?php if ( $gateway->is_place_order_button() ): ?>
+						<?php printf( esc_html__( 'After clicking "%s", you will be redirected to PayPal to complete your purchase securely.', 'pymntpl-paypal-woocommerce' ), $gateway->get_order_button_text() ) ?>
+					<?php else: ?>
 					<?php esc_html_e( 'Click the PayPal button below to process your order.', 'pymntpl-paypal-woocommerce' ) ?>
                 </p>
+				<?php endif; ?>
             </div>
 		<?php endif; ?>
         <div class="wc-ppcp-order-review-message__container" style="display: none">

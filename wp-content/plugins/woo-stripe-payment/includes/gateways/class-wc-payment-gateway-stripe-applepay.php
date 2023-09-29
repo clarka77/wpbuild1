@@ -1,4 +1,5 @@
 <?php
+
 defined( 'ABSPATH' ) || exit();
 
 if ( ! class_exists( 'WC_Payment_Gateway_Stripe' ) ) {
@@ -8,7 +9,7 @@ if ( ! class_exists( 'WC_Payment_Gateway_Stripe' ) ) {
 /**
  *
  * @package Stripe/Gateways
- * @author PaymentPlugins
+ * @author  PaymentPlugins
  *
  */
 class WC_Payment_Gateway_Stripe_ApplePay extends WC_Payment_Gateway_Stripe {
@@ -89,7 +90,8 @@ class WC_Payment_Gateway_Stripe_ApplePay extends WC_Payment_Gateway_Stripe {
 					array(
 						'style'       => $this->get_option( 'button_style' ),
 						'type'        => $this->get_button_type(),
-						'button_type' => $this->get_applepay_button_style_type()
+						'button_type' => $this->get_applepay_button_style_type(),
+						'design'      => $this->get_option( 'button_design', 'standard' )
 					)
 				),
 			)
@@ -128,4 +130,5 @@ class WC_Payment_Gateway_Stripe_ApplePay extends WC_Payment_Gateway_Stripe {
 				return 'black';
 		}
 	}
+
 }

@@ -170,7 +170,11 @@ export const usePayPalOptions = (
         if (error?.message?.indexOf('Window is closed') > -1) {
             return;
         }
-        setError(error);
+        if (error?.code === 'validation_errors') {
+            setError(error.data.errors[0]);
+        } else {
+            setError(error);
+        }
     }, [setError]);
 
     const createOrder = useCallback(async (data, actions) => {
@@ -184,7 +188,7 @@ export const usePayPalOptions = (
                     payment_method: 'ppcp',
                     address_provided: !isExpress && needsShipping,
                     checkout_blocks: true,
-                    ppcp_payment_type: !isExpress ? 'checkout' : null,
+                    context: !isExpress ? 'checkout' : null,
                     ...(needsShipping ? {
                         shipping_first_name: shippingAddress.first_name,
                         shipping_last_name: shippingAddress.last_name,
@@ -222,13 +226,13 @@ export const usePayPalOptions = (
             method: 'POST',
             url: getRestPath('/wc-ppcp/v1/billing-agreement/token'),
             data: {
-                context: 'checkout',
+                context: !isExpress ? 'checkout' : null,
                 payment_method: 'ppcp',
             }
         }).then(token => {
             return token;
         }).catch(error => setError(error));
-    }, [setError]);
+    }, [isExpress, setError]);
 
     const handleBillingToken = useCallback(async (billingToken) => {
         try {

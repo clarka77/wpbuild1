@@ -1,59 +1,35 @@
 /* PROJECT */
 
-	Site Name:   Provider Web Design
-	Site URL:    https://www.providerweb.design/
-	Created:     2023/05/08
+	Site Name:   Dog-Ma Collars
+	Site URL:    https://www.dogmacollars.com/
+	Created:     2023/09/29
 	Standards:   HTML5, CSS3
 	Components:  jQuery
 	Software:    WordPress
-	Plugins:     ACF, Rank Math, WPForms, et al
-	Web Design:  Troye @ Provider Web Design
+	Plugins:     Elementor, WooCommerce, et al
+	Web Design:  Clark A @ Clark Alford
 
 /* AUTHOR */
 
-	Name:        Troye Freedom
-	Nickname:    Excelsior
-	Title:       Managing Director, Provider Web Design
-	Location:    Colorado State, USA
-	Blog:        https://www.providerweb.design/blog/
-	Contact:     https://www.providerweb.design/contact/
+	Name:        Clark Alford
+	Nickname:    Clark A
+	Title:       Freelance Web Developer, Clark Alford
+	Location:    Kansas City, Kansas State, USA
+	Blog:        https://www.clarka.me/index.php#blog-area
+	Contact:     https://www.clarka.me/index.php#contact-area
 
 /* SOCIAL */
 
-	About.me:    https://about.me/jeffstarr
-	WordPress:   https://profiles.wordpress.org/specialk/
-	Linkedin:    https://linkedin.com/in/perishable
-	Twitter:     https://twitter.com/provider_design
-	Books:       https://[gumroad]
+	Github:      https://github.com/clarka77
+	CodePen:     https://codepen.io/clarka77
+	Linkedin:    https://www.linkedin.com/in/clarka2
+	Twitter:     https://twitter.com/clarka77
 
 /* META */
 
 	Built with: WordPress, PHP8, HTML5, CSS3, jQuery, JavaScript, MariaDB, nginx :)
 
 /* TEAM WOULD LIKE TO THANK */
-
-	Pure CSS
-	Site: https://purecss.io/
-	Author: Yahoo, Inc.
-	From: Sunnyvale, CA, USA
-
-	Mouse-Out Hover Effect: Final
-	Site: https://codepen.io/geoffgraham/pen/yLzvXyL
-	Author: Geoff Graham
-	Twitter: @geoffreygraham
-	Location: Fort Collins, CO, USA
-
-	Hover Effect 5
-	Site: https://codepen.io/team/css-tricks/pen/OJOXWPp
-	Author: CSS-Tricks
-	Twitter: @css
-	Location: Milwaukee, WI, USA
-
-	Pure CSS Sidebar Toggle Menu
-	Site: https://codepen.io/plavookac/pen/qomrMw
-	Author: Jelena Jovanovic
-	Twitter: @plavookac
-	Location: Universe
 
 	Humans TXT: We Are People, Not Machines
 	Email: hello@humanstxt.org

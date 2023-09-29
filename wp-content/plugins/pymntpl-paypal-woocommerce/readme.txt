@@ -4,7 +4,7 @@ Tags: paypal, paylater, venmo, credit cards
 Requires at least: 4.7
 Tested up to: 6.3
 Requires PHP: 7.1
-Stable tag: 1.0.37
+Stable tag: 1.0.38
 Copyright: Payment Plugins
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -45,10 +45,18 @@ Our documentation has a step-by-step guide on how to connect the plugin to your 
 Payment Plugins is the team behind several of the highest reviewed and installed Payment integrations for WooCommerce.
 
 == Changelog ==
+= 1.0.38 - 9/17/23 =
+* Added - New feature where the Place Order button on checkout page can be used for PayPal rather than the PayPal buttons. This is a good option
+for those that want the best page load speed or for German based merchants that have requirements around button location and text.
+* Added - Support for automatic tracking updates in PayPal via WooCommerce - ShipStation Integration plugin. When Shipstation
+updates the tracking number on the order, the PayPal plugin will send that info to PayPal.
+* Fixed - Add company field to list of validated fields when Validate Checkout Fields option is enabled
+* Updated - Improved support for formal locales like de_DE_formal etc
+* Updated - If address validation is enabled in Advanced Settings page, display all required fields that failed validation on checkout page rather than the first failed validation.
 = 1.0.37 - 8/30/23 =
 * Added - Advanced Settings option where merchants can enable/disable the PayPal change shipping address option. If enabled, the customer cannot change
-* Updated - Improved logic for rendering express buttons on product pages rendered by the product_page shortcode
 the shipping address in the PayPal popup.
+* Updated - Improved logic for rendering express buttons on product pages rendered by the product_page shortcode
 = 1.0.36 - 8/4/23 =
 * Added - Filter wc_ppcp_checkout_field_validation_label so the validation text can be modified
 * Added - Filter wc_ppcp_is_product_section_disabled so display of payment buttons on product page can be conditionally controlled.

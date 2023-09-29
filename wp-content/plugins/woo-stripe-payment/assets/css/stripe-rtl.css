@@ -489,6 +489,10 @@ li.payment_method_stripe_affirm label[for="payment_method_stripe_affirm"] {
         max-height: 40px;
     }
 
+    .apple-pay-button-rounded {
+        border-radius: 50px !important;
+    }
+
     .apple-pay-button-black {
         -apple-pay-button-style: black;
     }

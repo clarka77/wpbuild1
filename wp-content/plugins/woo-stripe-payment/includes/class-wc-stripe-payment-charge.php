@@ -48,12 +48,13 @@ class WC_Stripe_Payment_Charge extends WC_Stripe_Payment {
 	}
 
 	/**
+	 * @param float         $amount
+	 * @param WC_Order      $order
+	 * @param Stripe\Charge $charge
 	 *
-	 * {@inheritDoc}
-	 *
-	 * @see WC_Stripe_Payment::capture_charge()
+	 * @return \Stripe\Charge
 	 */
-	public function capture_charge( $amount, $order ) {
+	public function capture_charge( $amount, $order, $charge = null ) {
 		return $this->gateway->charges->mode( wc_stripe_order_mode( $order ) )->capture(
 			$order->get_transaction_id(),
 			array(

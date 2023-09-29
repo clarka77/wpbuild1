@@ -4,19 +4,39 @@
 namespace PaymentPlugins\WooCommerce\PPCP\Rest\Routes;
 
 
+use PaymentPlugins\WooCommerce\PPCP\Admin\Settings\AdvancedSettings;
+use PaymentPlugins\WooCommerce\PPCP\CheckoutValidator;
+use PaymentPlugins\WooCommerce\PPCP\Factories\CoreFactories;
 use PaymentPlugins\WooCommerce\PPCP\Logger;
 use PaymentPlugins\WooCommerce\PPCP\Payments\Gateways\AbstractGateway;
+use PaymentPlugins\WooCommerce\PPCP\Traits\CheckoutRouteTrait;
 use PaymentPlugins\WooCommerce\PPCP\WPPayPalClient;
 
 class BillingAgreementToken extends AbstractRoute {
+
+	use CheckoutRouteTrait;
 
 	private $client;
 
 	private $logger;
 
-	public function __construct( WPPayPalClient $client, Logger $logger ) {
-		$this->client = $client;
-		$this->logger = $logger;
+	private $settings;
+
+	private $factories;
+
+	private $validator;
+
+	public function __construct(
+		WPPayPalClient $client,
+		Logger $logger,
+		AdvancedSettings $settings,
+		CoreFactories $factories
+	) {
+		$this->client    = $client;
+		$this->logger    = $logger;
+		$this->settings  = $settings;
+		$this->factories = $factories;
+		$this->validator = new CheckoutValidator();
 	}
 
 	public function get_path() {
@@ -39,92 +59,44 @@ class BillingAgreementToken extends AbstractRoute {
 	public function handle_post_request( \WP_REST_Request $request ) {
 		// create the token
 		$customer = WC()->customer;
-		if ( $request['context'] === 'order_pay' ) {
-			$needs_shipping = false;
-		} else {
+
+		if ( $request['context'] !== 'order_pay' ) {
 			$needs_shipping = WC()->cart->needs_shipping();
+			$this->factories->initialize( WC()->cart, $customer );
+		} else {
+			$needs_shipping = false;
 		}
-		/**
-		 * @var AbstractGateway $payment_method
-		 */
-		$payment_method = WC()->payment_gateways()->payment_gateways()[ $request['payment_method'] ];
-		$params         = [
-			'description' => $payment_method->get_option( 'billing_agreement_description' ),
-			'payer'       => [
-				'payment_method' => 'PAYPAL'
-			],
-			'plan'        => [
-				'type'                 => 'MERCHANT_INITIATED_BILLING',
-				'merchant_preferences' => [
-					'cancel_url'                 => 'https://www.paypal.com/checkoutnow/error',
-					'return_url'                 => 'https://www.paypal.com/checkoutnow/error',
-					'notify_url'                 => 'https://www.paypal.com/checkoutnow/error',
-					'skip_shipping_address'      => ! $needs_shipping,
-					'immutable_shipping_address' => false
-				]
-			]
-		];
-		if ( $needs_shipping ) {
-			$params['shipping_address'] = [
-				'line1'          => $customer->get_shipping_address_1(),
-				'line2'          => $customer->get_shipping_address_2(),
-				'city'           => $customer->get_shipping_city(),
-				'state'          => $customer->get_shipping_state(),
-				'postal_code'    => $customer->get_shipping_postcode(),
-				'country_code'   => $customer->get_shipping_country(),
-				'recipient_name' => sprintf( '%s %s', $customer->get_shipping_first_name(), $customer->get_shipping_last_name() )
-			];
-			// get address fields for country and if any are empty, unset address
-			$fields = WC()->countries->get_address_fields( $customer->get_shipping_country(), '' );
-			foreach ( $params['shipping_address'] as $key => $value ) {
-				$wc_key = '';
-				switch ( $key ) {
-					case 'line1':
-						$wc_key = 'address_1';
-						break;
-					case 'line2':
-						$wc_key = 'address_2';
-						break;
-					case 'city':
-						$wc_key = 'city';
-						break;
-					case 'state':
-						$wc_key = 'state';
-						break;
-					case 'postal_code':
-						$wc_key = 'postcode';
-						break;
-					case 'country_code':
-						$wc_key = 'country';
-						break;
-					case 'recipient_name':
-						if ( isset( $fields['first_name']['required'] ) && $fields['first_name']['required'] ) {
-							if ( empty( $value ) ) {
-								unset( $params['shipping_address'] );
-								break;
-							}
-						}
-						if ( isset( $fields['last_name']['required'] ) && $fields['last_name']['required'] ) {
-							if ( empty( $value ) ) {
-								unset( $params['shipping_address'] );
-								break;
-							}
-						}
-						break;
-				}
-				if ( $wc_key && isset( $fields[ $wc_key ]['required'] ) ) {
-					if ( $fields[ $wc_key ]['required'] ) {
-						if ( empty( $value ) ) {
-							unset( $params['shipping_address'] );
-							break;
-						}
-					} else {
-						if ( empty( $value ) ) {
-							unset( $params['shipping_address'][ $key ] );
-						}
-					}
-				}
+
+		if ( $this->is_checkout_initiated( $request ) ) {
+			if ( $needs_shipping && $this->settings->is_shipping_address_disabled() ) {
+				$this->factories->billingAgreement->set_needs_shipping( false );
 			}
+			$this->update_customer_data( $customer, $request );
+
+			if ( $this->is_checkout_validation_enabled( $request ) ) {
+				$this->validator->validate_checkout( $request, false );
+			}
+			/**
+			 * 3rd party code can use this action to perform custom validations.
+			 *
+			 * @since 1.0.31
+			 */
+			do_action( 'wc_ppcp_validate_checkout_fields', $request, $this->validator );
+
+			if ( $this->validator->has_errors() ) {
+				return $this->validator->get_failure_response();
+			}
+		}
+
+		if ( $request['context'] === 'order_pay' ) {
+			/**
+			 * @var AbstractGateway $payment_method
+			 */
+			$payment_method = WC()->payment_gateways()->payment_gateways()[ $request['payment_method'] ];
+			$this->factories->billingAgreement->set_needs_shipping( false );
+			$params = $this->factories->billingAgreement->from_order( $payment_method );
+		} else {
+			$params = $this->factories->billingAgreement->from_cart( $request['payment_method'] );
 		}
 
 		$token = $this->client->billingAgreementTokens->create( $params );
