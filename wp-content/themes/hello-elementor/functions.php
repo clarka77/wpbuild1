@@ -232,7 +232,7 @@ if ( ! function_exists( 'hello_elementor_body_open' ) ) {
  */
 add_filter( 'avatar_defaults', 'wpb_new_gravatar' );
 function wpb_new_gravatar ($avatar_defaults) {
-    $myavatar = 'https://stage6.develop-ment.space/wp-content/uploads/2023/07/default.png';
+    $myavatar = '<?php echo get_stylesheet_directory_uri();?>/wp-content/uploads/2023/07/default.png';
     $avatar_defaults[$myavatar] = "Default Gravatar";
     return $avatar_defaults;
 }
